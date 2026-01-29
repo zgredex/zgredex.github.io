@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XTEINK X4 Calendar Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@400;700&family=Roboto+Slab:wght@400;700&family=Lora:wght@400;700&family=Merriweather:wght@400;700&family=Source+Serif+4:wght@400;700&family=IBM+Plex+Serif:wght@400;700&family=Libre+Baskerville:wght@400;700&family=Playfair+Display:wght@400;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0a0a; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useRef, useEffect } = React;
+
+    const MONTHS = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+
+    const DAYS_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+    const FONTS = [
+      { name: 'Aleo', value: 'Aleo, serif' },
+      { name: 'Georgia', value: 'Georgia, serif' },
+      { name: 'Charis SIL', value: '"Charis SIL", serif' },
+      { name: 'Gill Sans', value: '"Gill Sans", "Gill Sans MT", sans-serif' },
+      { name: 'Atkinson Hyperlegible', value: '"Atkinson Hyperlegible", sans-serif' },
+      { name: 'Roboto Slab', value: '"Roboto Slab", serif' },
+      { name: 'Lora', value: 'Lora, serif' },
+      { name: 'Merriweather', value: 'Merriweather, serif' },
+      { name: 'Source Serif', value: '"Source Serif 4", serif' },
+      { name: 'IBM Plex Serif', value: '"IBM Plex Serif", serif' },
+      { name: 'Libre Baskerville', value: '"Libre Baskerville", serif' },
+      { name: 'Playfair Display', value: '"Playfair Display", serif' },
+    ];
+
+    function getDaysInMonth(year, month) {
+      return new Date(year, month + 1, 0).getDate();
+    }
+
+    function getFirstDayOfMonth(year, month) {
+      const day = new Date(year, month, 1).getDay();
+      return day === 0 ? 6 : day - 1;
+    }
+
+    function CalendarPreview({ month, year, orientation, canvasRef, bitDepth, font }) {
+      const isLandscape = orientation === 'landscape';
+      const DEVICE_WIDTH = isLandscape ? 800 : 480;
+      const DEVICE_HEIGHT = isLandscape ? 480 : 800;
+
+      const daysInMonth = getDaysInMonth(year, month);
+      const firstDay = getFirstDayOfMonth(year, month);
+      
+      const weeks = [];
+      let currentWeek = Array(firstDay).fill(null);
+      
+      for (let day = 1; day <= daysInMonth; day++) {
+        currentWeek.push(day);
+        if (currentWeek.length === 7) {
+          weeks.push(currentWeek);
+          currentWeek = [];
+        }
+      }
+      
+      if (currentWeek.length > 0) {
+        while (currentWeek.length < 7) {
+          currentWeek.push(null);
+        }
+        weeks.push(currentWeek);
+      }
+
+      useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
+        canvas.width = DEVICE_WIDTH;
+        canvas.height = DEVICE_HEIGHT;
+        
+        // White background
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, DEVICE_WIDTH, DEVICE_HEIGHT);
+        
+        // Layout calculations - minimal margins, balanced elements
+        const padding = isLandscape ? 12 : 16;
+        const headerHeight = isLandscape ? 55 : 75;
+        const dayHeaderHeight = isLandscape ? 38 : 48;
+        const separatorGap = isLandscape ? 12 : 14;
+        const availableWidth = DEVICE_WIDTH - padding * 2;
+        const availableHeight = DEVICE_HEIGHT - headerHeight - dayHeaderHeight - separatorGap - padding;
+        
+        const cellWidth = availableWidth / 7;
+        const cellHeight = availableHeight / weeks.length;
+        const circleRadius = Math.min(cellWidth, cellHeight) * 0.43;
+        
+        const startX = padding;
+        const startY = headerHeight + dayHeaderHeight + separatorGap;
+        
+        // Header - Month Year
+        ctx.fillStyle = '#000000';
+        ctx.font = `700 ${isLandscape ? 34 : 44}px ${font}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`${MONTHS[month]} ${year}`, DEVICE_WIDTH / 2, headerHeight / 2 + 4);
+        
+        // Day headers - balanced with day numbers
+        ctx.font = `700 ${isLandscape ? 15 : 18}px ${font}`;
+        ctx.textBaseline = 'middle';
+        
+        DAYS_SHORT.forEach((day, i) => {
+          const isWeekend = i >= 5;
+          const x = startX + cellWidth * i + cellWidth / 2;
+          const y = headerHeight + dayHeaderHeight / 2;
+          
+          if (isWeekend) {
+            // Inverted weekend header - pill shape
+            const textWidth = ctx.measureText(day).width;
+            const pillWidth = textWidth + (isLandscape ? 16 : 18);
+            const pillHeight = isLandscape ? 26 : 30;
+            const pillRadius = pillHeight / 2;
+            
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.roundRect(x - pillWidth / 2, y - pillHeight / 2, pillWidth, pillHeight, pillRadius);
+            ctx.fill();
+            
+            ctx.fillStyle = '#FFFFFF';
+            ctx.textAlign = 'center';
+            ctx.fillText(day, x, y);
+          } else {
+            ctx.fillStyle = '#000000';
+            ctx.textAlign = 'center';
+            ctx.fillText(day, x, y);
+          }
+        });
+        
+        // Thick separator line
+        const lineY = headerHeight + dayHeaderHeight + separatorGap / 2;
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(padding, lineY - 1.5, availableWidth, 3);
+        
+        // Day circles - balanced with headers
+        ctx.font = `400 ${isLandscape ? 22 : 26}px ${font}`;
+        ctx.textBaseline = 'middle';
+        
+        weeks.forEach((week, weekIndex) => {
+          week.forEach((day, dayIndex) => {
+            if (day !== null) {
+              const isWeekend = dayIndex >= 5;
+              const x = startX + cellWidth * dayIndex + cellWidth / 2;
+              const y = startY + cellHeight * weekIndex + cellHeight / 2;
+              
+              if (isWeekend) {
+                // Filled circle for weekends
+                ctx.fillStyle = '#000000';
+                ctx.beginPath();
+                ctx.arc(x, y, circleRadius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#FFFFFF';
+                ctx.textAlign = 'center';
+                ctx.fillText(day.toString(), x, y);
+              } else {
+                // Outlined circle for weekdays
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(x, y, circleRadius, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                ctx.fillStyle = '#000000';
+                ctx.textAlign = 'center';
+                ctx.fillText(day.toString(), x, y);
+              }
+            }
+          });
+        });
+        
+        // Apply bit depth conversion for accurate preview
+        const imageData = ctx.getImageData(0, 0, DEVICE_WIDTH, DEVICE_HEIGHT);
+        const pixels = imageData.data;
+        
+        if (bitDepth === '1bit') {
+          // Convert to pure black and white
+          for (let i = 0; i < pixels.length; i += 4) {
+            const gray = pixels[i] * 0.299 + pixels[i + 1] * 0.587 + pixels[i + 2] * 0.114;
+            const val = gray > 128 ? 255 : 0;
+            pixels[i] = val;
+            pixels[i + 1] = val;
+            pixels[i + 2] = val;
+          }
+        } else {
+          // Convert to grayscale
+          for (let i = 0; i < pixels.length; i += 4) {
+            const gray = Math.round(pixels[i] * 0.299 + pixels[i + 1] * 0.587 + pixels[i + 2] * 0.114);
+            pixels[i] = gray;
+            pixels[i + 1] = gray;
+            pixels[i + 2] = gray;
+          }
+        }
+        
+        ctx.putImageData(imageData, 0, 0);
+        
+      }, [month, year, orientation, canvasRef, DEVICE_WIDTH, DEVICE_HEIGHT, weeks, bitDepth, font]);
+
+      return (
+        <div 
+          style={{
+            background: '#1a1a1a',
+            padding: '16px',
+            borderRadius: '12px',
+            boxShadow: 'inset 0 2px 20px rgba(0,0,0,0.5)',
+            width: 800 * 0.5 + 32,
+            height: 800 * 0.5 + 32,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <canvas
+            ref={canvasRef}
+            style={{
+              width: DEVICE_WIDTH * 0.5,
+              height: DEVICE_HEIGHT * 0.5,
+              display: 'block',
+              imageRendering: 'pixelated',
+              borderRadius: '4px',
+            }}
+          />
+        </div>
+      );
+    }
+
+    function EinkCalendarGenerator() {
+      const now = new Date();
+      const [month, setMonth] = useState(now.getMonth());
+      const [year, setYear] = useState(now.getFullYear());
+      const [orientation, setOrientation] = useState('portrait');
+      const [bitDepth, setBitDepth] = useState('1bit');
+      const [font, setFont] = useState(FONTS[0].value);
+      const [isGenerating, setIsGenerating] = useState(false);
+      const canvasRef = useRef(null);
+
+      const isLandscape = orientation === 'landscape';
+      const DEVICE_WIDTH = isLandscape ? 800 : 480;
+      const DEVICE_HEIGHT = isLandscape ? 480 : 800;
+
+      const generateBMP = () => {
+        setIsGenerating(true);
+        
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
+        const imageData = ctx.getImageData(0, 0, DEVICE_WIDTH, DEVICE_HEIGHT);
+        const pixels = imageData.data;
+        
+        if (bitDepth === '8bit') {
+          // 8-bit grayscale BMP
+          const rowSize = Math.ceil(DEVICE_WIDTH / 4) * 4; // Row padding to 4-byte boundary
+          const pixelDataSize = rowSize * DEVICE_HEIGHT;
+          const paletteSize = 256 * 4; // 256 colors × 4 bytes each
+          const fileSize = 54 + paletteSize + pixelDataSize;
+          
+          const bmp = new Uint8Array(fileSize);
+          let offset = 0;
+          
+          // BMP File Header (14 bytes)
+          bmp[offset++] = 0x42; bmp[offset++] = 0x4D; // 'BM'
+          bmp[offset++] = fileSize & 0xFF;
+          bmp[offset++] = (fileSize >> 8) & 0xFF;
+          bmp[offset++] = (fileSize >> 16) & 0xFF;
+          bmp[offset++] = (fileSize >> 24) & 0xFF;
+          bmp[offset++] = 0; bmp[offset++] = 0; // Reserved
+          bmp[offset++] = 0; bmp[offset++] = 0; // Reserved
+          const dataOffset = 54 + paletteSize;
+          bmp[offset++] = dataOffset & 0xFF;
+          bmp[offset++] = (dataOffset >> 8) & 0xFF;
+          bmp[offset++] = (dataOffset >> 16) & 0xFF;
+          bmp[offset++] = (dataOffset >> 24) & 0xFF;
+          
+          // DIB Header (40 bytes)
+          bmp[offset++] = 40; bmp[offset++] = 0; bmp[offset++] = 0; bmp[offset++] = 0;
+          bmp[offset++] = DEVICE_WIDTH & 0xFF;
+          bmp[offset++] = (DEVICE_WIDTH >> 8) & 0xFF;
+          bmp[offset++] = 0; bmp[offset++] = 0;
+          bmp[offset++] = DEVICE_HEIGHT & 0xFF;
+          bmp[offset++] = (DEVICE_HEIGHT >> 8) & 0xFF;
+          bmp[offset++] = 0; bmp[offset++] = 0;
+          bmp[offset++] = 1; bmp[offset++] = 0; // Planes
+          bmp[offset++] = 8; bmp[offset++] = 0; // 8 bits per pixel
+          bmp[offset++] = 0; bmp[offset++] = 0; bmp[offset++] = 0; bmp[offset++] = 0; // No compression
+          bmp[offset++] = pixelDataSize & 0xFF;
+          bmp[offset++] = (pixelDataSize >> 8) & 0xFF;
+          bmp[offset++] = (pixelDataSize >> 16) & 0xFF;
+          bmp[offset++] = (pixelDataSize >> 24) & 0xFF;
+          // 220 DPI = 8661 pixels/meter
+          bmp[offset++] = 0xD5; bmp[offset++] = 0x21; bmp[offset++] = 0; bmp[offset++] = 0;
+          bmp[offset++] = 0xD5; bmp[offset++] = 0x21; bmp[offset++] = 0; bmp[offset++] = 0;
+          bmp[offset++] = 0; bmp[offset++] = 1; bmp[offset++] = 0; bmp[offset++] = 0; // 256 colors
+          bmp[offset++] = 0; bmp[offset++] = 0; bmp[offset++] = 0; bmp[offset++] = 0; // All important
+          
+          // Grayscale palette (256 entries)
+          for (let i = 0; i < 256; i++) {
+            bmp[offset++] = i; // Blue
+            bmp[offset++] = i; // Green
+            bmp[offset++] = i; // Red
+            bmp[offset++] = 0; // Reserved
+          }
+          
+          // Pixel data (bottom-up)
+          for (let y = DEVICE_HEIGHT - 1; y >= 0; y--) {
+            for (let x = 0; x < DEVICE_WIDTH; x++) {
+              const i = (y * DEVICE_WIDTH + x) * 4;
+              const gray = Math.round(pixels[i] * 0.299 + pixels[i + 1] * 0.587 + pixels[i + 2] * 0.114);
+              bmp[offset++] = gray;
+            }
+            // Padding to 4-byte boundary
+            const padding = rowSize - DEVICE_WIDTH;
+            for (let p = 0; p < padding; p++) {
+              bmp[offset++] = 0;
+            }
+          }
+          
+          // Download
+          const blob = new Blob([bmp], { type: 'image/bmp' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'sleep.bmp';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          
+        } else {
+          // 1-bit monochrome BMP
+          const monoPixels = new Uint8Array(DEVICE_WIDTH * DEVICE_HEIGHT);
+          for (let i = 0; i < pixels.length; i += 4) {
+            const gray = (pixels[i] * 0.299 + pixels[i + 1] * 0.587 + pixels[i + 2] * 0.114);
+            monoPixels[i / 4] = gray > 128 ? 1 : 0;
+          }
+          
+          const rowSize = Math.ceil(DEVICE_WIDTH / 32) * 4;
+          const pixelDataSize = rowSize * DEVICE_HEIGHT;
+          const fileSize = 62 + pixelDataSize;
+          
+          const bmp = new Uint8Array(fileSize);
+          let offset = 0;
+          
+          // BMP File Header
+          bmp[offset++] = 0x42; bmp[offset++] = 0x4D;
+          bmp[offset++] = fileSize & 0xFF;
+          bmp[offset++] = (fileSize >> 8) & 0xFF;
+          bmp[offset++] = (fileSize >> 16) & 0xFF;
+          bmp[offset++] = (fileSize >> 24) & 0xFF;
+          bmp[offset++] = 0; bmp[offset++] = 0;
+          bmp[offset++] = 0; bmp[offset++] = 0;
+          bmp[offset++] = 62; bmp[offset++] = 0; bmp[offset++] = 0; bmp[offset++] = 0;
+          
+          // DIB Header
+          bmp[offset++] = 40; bmp[offset++] = 0; bmp[offset++] = 0; bmp[offset++] = 0;
+          bmp[offset++] = DEVICE_WIDTH & 0xFF;
+          bmp[offset++] = (DEVICE_WIDTH >> 8) & 0xFF;
+          bmp[offset++] = 0; bmp[offset++] = 0;
+          bmp[offset++] = DEVICE_HEIGHT & 0xFF;
+          bmp[offset++] = (DEVICE_HEIGHT >> 8) & 0xFF;
+          bmp[offset++] = 0; bmp[offset++] = 0;
+          bmp[offset++] = 1; bmp[offset++] = 0;
+          bmp[offset++] = 1; bmp[offset++] = 0;
+          bmp[offset++] = 0; bmp[offset++] = 0; bmp[offset++] = 0; bmp[offset++] = 0;
+          bmp[offset++] = pixelDataSize & 0xFF;
+          bmp[offset++] = (pixelDataSize >> 8) & 0xFF;
+          bmp[offset++] = (pixelDataSize >> 16) & 0xFF;
+          bmp[offset++] = (pixelDataSize >> 24) & 0xFF;
+          bmp[offset++] = 0xD5; bmp[offset++] = 0x21; bmp[offset++] = 0; bmp[offset++] = 0;
+          bmp[offset++] = 0xD5; bmp[offset++] = 0x21; bmp[offset++] = 0; bmp[offset++] = 0;
+          bmp[offset++] = 2; bmp[offset++] = 0; bmp[offset++] = 0; bmp[offset++] = 0;
+          bmp[offset++] = 0; bmp[offset++] = 0; bmp[offset++] = 0; bmp[offset++] = 0;
+          
+          // Color table
+          bmp[offset++] = 0; bmp[offset++] = 0; bmp[offset++] = 0; bmp[offset++] = 0;
+          bmp[offset++] = 255; bmp[offset++] = 255; bmp[offset++] = 255; bmp[offset++] = 0;
+          
+          // Pixel data
+          for (let y = DEVICE_HEIGHT - 1; y >= 0; y--) {
+            let byteVal = 0;
+            let bitCount = 0;
+            let rowOffset = 0;
+            
+            for (let x = 0; x < DEVICE_WIDTH; x++) {
+              const pixelIndex = y * DEVICE_WIDTH + x;
+              byteVal = (byteVal << 1) | monoPixels[pixelIndex];
+              bitCount++;
+              
+              if (bitCount === 8) {
+                bmp[offset + rowOffset] = byteVal;
+                rowOffset++;
+                byteVal = 0;
+                bitCount = 0;
+              }
+            }
+            
+            if (bitCount > 0) {
+              byteVal = byteVal << (8 - bitCount);
+              bmp[offset + rowOffset] = byteVal;
+              rowOffset++;
+            }
+            
+            offset += rowSize;
+          }
+          
+          // Download
+          const blob = new Blob([bmp], { type: 'image/bmp' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'sleep.bmp';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }
+        
+        setTimeout(() => setIsGenerating(false), 400);
+      };
+
+      const years = [];
+      for (let y = now.getFullYear(); y <= 2077; y++) years.push(y);
+
+      // Simple responsive check
+      const [scale, setScale] = useState(1);
+      const containerRef = useRef(null);
+      
+      useEffect(() => {
+        const updateScale = () => {
+          if (!containerRef.current) return;
+          
+          const container = containerRef.current;
+          const contentWidth = container.scrollWidth;
+          const contentHeight = container.scrollHeight;
+          
+          const availableWidth = window.innerWidth - 32;
+          const availableHeight = window.innerHeight - 32;
+          
+          const scaleX = availableWidth / contentWidth;
+          const scaleY = availableHeight / contentHeight;
+          
+          setScale(Math.min(scaleX, scaleY, 1.5)); // allow up to 1.5x scale
+        };
+        
+        // Initial calculation after render
+        setTimeout(updateScale, 50);
+        window.addEventListener('resize', updateScale);
+        return () => window.removeEventListener('resize', updateScale);
+      }, []);
+
+      return (
+        <div style={{
+          minHeight: '100vh',
+          width: '100vw',
+          background: '#0a0a0a',
+          fontFamily: 'Aleo, Georgia, serif',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+        }}>
+          <div 
+            ref={containerRef}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '16px',
+              transform: `scale(${scale})`,
+              transformOrigin: 'center center',
+            }}
+          >
+            {/* Header + Controls */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '20px',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+            }}>
+              {/* Header */}
+              <div style={{ textAlign: 'center' }}>
+                <h1 style={{
+                  color: '#fff',
+                  fontSize: '18px',
+                  fontWeight: '500',
+                  margin: '0 0 2px 0',
+                  letterSpacing: '4px',
+                }}>
+                  XTEINK X4
+                </h1>
+                <p style={{
+                  color: '#444',
+                  fontSize: '10px',
+                  margin: 0,
+                  letterSpacing: '2px',
+                }}>
+                  CALENDAR
+                </p>
+              </div>
+
+              <div style={{ width: '1px', height: '32px', background: '#252525' }} />
+
+              {/* Month & Year */}
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <select
+                  value={month}
+                  onChange={(e) => setMonth(parseInt(e.target.value))}
+                  style={{
+                    background: '#151515',
+                    border: '1px solid #252525',
+                    borderRadius: '6px',
+                    color: '#fff',
+                    padding: '8px 28px 8px 12px',
+                    fontSize: '13px',
+                    fontFamily: 'Aleo, Georgia, serif',
+                    cursor: 'pointer',
+                    appearance: 'none',
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%23555' d='M5 7L1 3h8z'/%3E%3C/svg%3E")`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'right 8px center',
+                  }}
+                >
+                  {MONTHS.map((m, i) => (
+                    <option key={i} value={i}>{m}</option>
+                  ))}
+                </select>
+
+                <select
+                  value={year}
+                  onChange={(e) => setYear(parseInt(e.target.value))}
+                  style={{
+                    background: '#151515',
+                    border: '1px solid #252525',
+                    borderRadius: '6px',
+                    color: '#fff',
+                    padding: '8px 28px 8px 12px',
+                    fontSize: '13px',
+                    fontFamily: 'Aleo, Georgia, serif',
+                    cursor: 'pointer',
+                    appearance: 'none',
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%23555' d='M5 7L1 3h8z'/%3E%3C/svg%3E")`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'right 8px center',
+                  }}
+                >
+                  {years.map((y) => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ width: '1px', height: '32px', background: '#252525' }} />
+
+              {/* Font Picker */}
+              <select
+                value={font}
+                onChange={(e) => setFont(e.target.value)}
+                style={{
+                  background: '#151515',
+                  border: '1px solid #252525',
+                  borderRadius: '6px',
+                  color: '#fff',
+                  padding: '8px 28px 8px 12px',
+                  fontSize: '13px',
+                  fontFamily: font,
+                  cursor: 'pointer',
+                  appearance: 'none',
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%23555' d='M5 7L1 3h8z'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 8px center',
+                }}
+              >
+                {FONTS.map((f) => (
+                  <option key={f.name} value={f.value} style={{ fontFamily: f.disabled ? 'inherit' : f.value }} disabled={f.disabled}>{f.name}</option>
+                ))}
+              </select>
+
+              <div style={{ width: '1px', height: '32px', background: '#252525' }} />
+
+              {/* Orientation Toggle */}
+              <div style={{
+                display: 'flex',
+                background: '#151515',
+                border: '1px solid #252525',
+                borderRadius: '6px',
+                overflow: 'hidden',
+              }}>
+                <button
+                  onClick={() => setOrientation('portrait')}
+                  style={{
+                    background: orientation === 'portrait' ? '#fff' : 'transparent',
+                    color: orientation === 'portrait' ? '#000' : '#555',
+                    border: 'none',
+                    padding: '8px 10px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
+                    <rect x="1" y="1" width="8" height="12" rx="1" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setOrientation('landscape')}
+                  style={{
+                    background: orientation === 'landscape' ? '#fff' : 'transparent',
+                    color: orientation === 'landscape' ? '#000' : '#555',
+                    border: 'none',
+                    padding: '8px 10px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor">
+                    <rect x="1" y="1" width="12" height="8" rx="1" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+                  </svg>
+                </button>
+              </div>
+
+              {/* Bit Depth Toggle */}
+              <div style={{
+                display: 'flex',
+                background: '#151515',
+                border: '1px solid #252525',
+                borderRadius: '6px',
+                overflow: 'hidden',
+              }}>
+                <button
+                  onClick={() => setBitDepth('1bit')}
+                  style={{
+                    background: bitDepth === '1bit' ? '#fff' : 'transparent',
+                    color: bitDepth === '1bit' ? '#000' : '#555',
+                    border: 'none',
+                    padding: '8px 12px',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    fontFamily: 'Aleo, Georgia, serif',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  1-bit
+                </button>
+                <button
+                  onClick={() => setBitDepth('8bit')}
+                  style={{
+                    background: bitDepth === '8bit' ? '#fff' : 'transparent',
+                    color: bitDepth === '8bit' ? '#000' : '#555',
+                    border: 'none',
+                    padding: '8px 12px',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    fontFamily: 'Aleo, Georgia, serif',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  8-bit
+                </button>
+              </div>
+            </div>
+
+            {/* Preview */}
+            <CalendarPreview 
+              month={month} 
+              year={year}
+              orientation={orientation}
+              canvasRef={canvasRef}
+              bitDepth={bitDepth}
+              font={font}
+            />
+
+            {/* Download Button */}
+            <div style={{ textAlign: 'center' }}>
+              <button
+                onClick={generateBMP}
+                disabled={isGenerating}
+                style={{
+                  background: isGenerating ? '#222' : '#fff',
+                  color: isGenerating ? '#555' : '#000',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '12px 32px',
+                  fontSize: '13px',
+                  fontFamily: 'Aleo, Georgia, serif',
+                  fontWeight: '700',
+                  letterSpacing: '1px',
+                  cursor: isGenerating ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.15s',
+                }}
+              >
+                {isGenerating ? 'GENERATING...' : 'DOWNLOAD SLEEP.BMP'}
+              </button>
+              
+              <p style={{
+                color: '#333',
+                fontSize: '10px',
+                marginTop: '10px',
+                letterSpacing: '1px',
+              }}>
+                {bitDepth === '1bit' ? '1-bit mono' : '8-bit grayscale'} • {DEVICE_WIDTH}×{DEVICE_HEIGHT} • 220 DPI
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<EinkCalendarGenerator />);
+  </script>
+</body>
+</html>
