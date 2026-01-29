@@ -49,13 +49,20 @@
       return day === 0 ? 6 : day - 1;
     }
 
-    function CalendarPreview({ month, year, orientation, canvasRef, bitDepth, font }) {
+    function CalendarPreview({ month, year, orientation, canvasRef, bitDepth, font, weekStart }) {
       const isLandscape = orientation === 'landscape';
       const DEVICE_WIDTH = isLandscape ? 800 : 480;
       const DEVICE_HEIGHT = isLandscape ? 480 : 800;
+      
+      const DAYS_MONDAY = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const DAYS_SUNDAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const DAYS = weekStart === 'sunday' ? DAYS_SUNDAY : DAYS_MONDAY;
 
       const daysInMonth = getDaysInMonth(year, month);
-      const firstDay = getFirstDayOfMonth(year, month);
+      const jsDay = new Date(year, month, 1).getDay(); // 0=Sunday
+      const firstDay = weekStart === 'sunday' 
+        ? jsDay 
+        : (jsDay === 0 ? 6 : jsDay - 1);
       
       const weeks = [];
       let currentWeek = Array(firstDay).fill(null);
@@ -113,8 +120,10 @@
         ctx.font = `700 ${isLandscape ? 15 : 18}px ${font}`;
         ctx.textBaseline = 'middle';
         
-        DAYS_SHORT.forEach((day, i) => {
-          const isWeekend = i >= 5;
+        DAYS.forEach((day, i) => {
+          const isWeekend = weekStart === 'sunday' 
+            ? (i === 0 || i === 6)  // Sunday first: Sun(0) and Sat(6) are weekends
+            : (i >= 5);             // Monday first: Sat(5) and Sun(6) are weekends
           const x = startX + cellWidth * i + cellWidth / 2;
           const y = headerHeight + dayHeaderHeight / 2;
           
@@ -152,7 +161,9 @@
         weeks.forEach((week, weekIndex) => {
           week.forEach((day, dayIndex) => {
             if (day !== null) {
-              const isWeekend = dayIndex >= 5;
+              const isWeekend = weekStart === 'sunday'
+                ? (dayIndex === 0 || dayIndex === 6)  // Sunday first
+                : (dayIndex >= 5);                     // Monday first
               const x = startX + cellWidth * dayIndex + cellWidth / 2;
               const y = startY + cellHeight * weekIndex + cellHeight / 2;
               
@@ -207,7 +218,7 @@
         
         ctx.putImageData(imageData, 0, 0);
         
-      }, [month, year, orientation, canvasRef, DEVICE_WIDTH, DEVICE_HEIGHT, weeks, bitDepth, font]);
+      }, [month, year, orientation, canvasRef, DEVICE_WIDTH, DEVICE_HEIGHT, weeks, bitDepth, font, weekStart, DAYS]);
 
       return (
         <div 
@@ -244,6 +255,7 @@
       const [orientation, setOrientation] = useState('portrait');
       const [bitDepth, setBitDepth] = useState('1bit');
       const [font, setFont] = useState(FONTS[0].value);
+      const [weekStart, setWeekStart] = useState('monday');
       const [isGenerating, setIsGenerating] = useState(false);
       const canvasRef = useRef(null);
 
@@ -674,6 +686,46 @@
                   8-bit
                 </button>
               </div>
+
+              {/* Week Start Toggle */}
+              <div style={{
+                display: 'flex',
+                background: '#151515',
+                border: '1px solid #252525',
+                borderRadius: '6px',
+                overflow: 'hidden',
+              }}>
+                <button
+                  onClick={() => setWeekStart('monday')}
+                  style={{
+                    background: weekStart === 'monday' ? '#fff' : 'transparent',
+                    color: weekStart === 'monday' ? '#000' : '#555',
+                    border: 'none',
+                    padding: '8px 12px',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    fontFamily: 'Aleo, Georgia, serif',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  Mon
+                </button>
+                <button
+                  onClick={() => setWeekStart('sunday')}
+                  style={{
+                    background: weekStart === 'sunday' ? '#fff' : 'transparent',
+                    color: weekStart === 'sunday' ? '#000' : '#555',
+                    border: 'none',
+                    padding: '8px 12px',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    fontFamily: 'Aleo, Georgia, serif',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  Sun
+                </button>
+              </div>
             </div>
 
             {/* Preview */}
@@ -684,6 +736,7 @@
               canvasRef={canvasRef}
               bitDepth={bitDepth}
               font={font}
+              weekStart={weekStart}
             />
 
             {/* Download Button */}
