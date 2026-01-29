@@ -27,17 +27,17 @@
 
     const FONTS = [
       { name: 'Aleo', value: 'Aleo, serif' },
-      { name: 'Georgia', value: 'Georgia, serif' },
-      { name: 'Charis SIL', value: '"Charis SIL", serif' },
-      { name: 'Gill Sans', value: '"Gill Sans", "Gill Sans MT", sans-serif' },
       { name: 'Atkinson Hyperlegible', value: '"Atkinson Hyperlegible", sans-serif' },
-      { name: 'Roboto Slab', value: '"Roboto Slab", serif' },
-      { name: 'Lora', value: 'Lora, serif' },
-      { name: 'Merriweather', value: 'Merriweather, serif' },
-      { name: 'Source Serif', value: '"Source Serif 4", serif' },
+      { name: 'Charis SIL', value: '"Charis SIL", serif' },
+      { name: 'Georgia', value: 'Georgia, serif' },
+      { name: 'Gill Sans', value: '"Gill Sans", "Gill Sans MT", sans-serif' },
       { name: 'IBM Plex Serif', value: '"IBM Plex Serif", serif' },
       { name: 'Libre Baskerville', value: '"Libre Baskerville", serif' },
+      { name: 'Lora', value: 'Lora, serif' },
+      { name: 'Merriweather', value: 'Merriweather, serif' },
       { name: 'Playfair Display', value: '"Playfair Display", serif' },
+      { name: 'Roboto Slab', value: '"Roboto Slab", serif' },
+      { name: 'Source Serif', value: '"Source Serif 4", serif' },
     ];
 
     function getDaysInMonth(year, month) {
@@ -255,7 +255,7 @@
       const [month, setMonth] = useState(now.getMonth());
       const [year, setYear] = useState(now.getFullYear());
       const [orientation, setOrientation] = useState('portrait');
-      const [bitDepth, setBitDepth] = useState('1bit');
+      const [bitDepth, setBitDepth] = useState('8bit');
       const [font, setFont] = useState(FONTS[0].value);
       const [weekStart, setWeekStart] = useState('monday');
       const [markWeekends, setMarkWeekends] = useState(true);
