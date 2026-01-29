@@ -49,7 +49,7 @@
       return day === 0 ? 6 : day - 1;
     }
 
-    function CalendarPreview({ month, year, orientation, canvasRef, bitDepth, font, weekStart }) {
+    function CalendarPreview({ month, year, orientation, canvasRef, bitDepth, font, weekStart, markWeekends }) {
       const isLandscape = orientation === 'landscape';
       const DEVICE_WIDTH = isLandscape ? 800 : 480;
       const DEVICE_HEIGHT = isLandscape ? 480 : 800;
@@ -121,13 +121,14 @@
         ctx.textBaseline = 'middle';
         
         DAYS.forEach((day, i) => {
-          const isWeekend = weekStart === 'sunday' 
-            ? (i === 0 || i === 6)  // Sunday first: Sun(0) and Sat(6) are weekends
-            : (i >= 5);             // Monday first: Sat(5) and Sun(6) are weekends
+          const isWeekendDay = weekStart === 'sunday' 
+            ? (i === 0 || i === 6)
+            : (i >= 5);
+          const shouldMark = markWeekends && isWeekendDay;
           const x = startX + cellWidth * i + cellWidth / 2;
           const y = headerHeight + dayHeaderHeight / 2;
           
-          if (isWeekend) {
+          if (shouldMark) {
             // Inverted weekend header - pill shape
             const textWidth = ctx.measureText(day).width;
             const pillWidth = textWidth + (isLandscape ? 16 : 18);
@@ -161,13 +162,14 @@
         weeks.forEach((week, weekIndex) => {
           week.forEach((day, dayIndex) => {
             if (day !== null) {
-              const isWeekend = weekStart === 'sunday'
-                ? (dayIndex === 0 || dayIndex === 6)  // Sunday first
-                : (dayIndex >= 5);                     // Monday first
+              const isWeekendDay = weekStart === 'sunday'
+                ? (dayIndex === 0 || dayIndex === 6)
+                : (dayIndex >= 5);
+              const shouldMark = markWeekends && isWeekendDay;
               const x = startX + cellWidth * dayIndex + cellWidth / 2;
               const y = startY + cellHeight * weekIndex + cellHeight / 2;
               
-              if (isWeekend) {
+              if (shouldMark) {
                 // Filled circle for weekends
                 ctx.fillStyle = '#000000';
                 ctx.beginPath();
@@ -218,7 +220,7 @@
         
         ctx.putImageData(imageData, 0, 0);
         
-      }, [month, year, orientation, canvasRef, DEVICE_WIDTH, DEVICE_HEIGHT, weeks, bitDepth, font, weekStart, DAYS]);
+      }, [month, year, orientation, canvasRef, DEVICE_WIDTH, DEVICE_HEIGHT, weeks, bitDepth, font, weekStart, DAYS, markWeekends]);
 
       return (
         <div 
@@ -256,6 +258,7 @@
       const [bitDepth, setBitDepth] = useState('1bit');
       const [font, setFont] = useState(FONTS[0].value);
       const [weekStart, setWeekStart] = useState('monday');
+      const [markWeekends, setMarkWeekends] = useState(true);
       const [isGenerating, setIsGenerating] = useState(false);
       const canvasRef = useRef(null);
 
@@ -603,6 +606,72 @@
 
               <div style={{ width: '1px', height: '32px', background: '#252525' }} />
 
+              {/* Mark Weekends Toggle */}
+              <button
+                onClick={() => setMarkWeekends(!markWeekends)}
+                style={{
+                  background: markWeekends ? '#fff' : '#151515',
+                  color: markWeekends ? '#000' : '#555',
+                  border: '1px solid #252525',
+                  borderRadius: '6px',
+                  padding: '8px 12px',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  fontFamily: 'Aleo, Georgia, serif',
+                  transition: 'all 0.15s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                  <circle cx="7" cy="7" r="6" fill="currentColor"/>
+                </svg>
+                Wknd
+              </button>
+
+              {/* Week Start Toggle */}
+              <div style={{
+                display: 'flex',
+                background: '#151515',
+                border: '1px solid #252525',
+                borderRadius: '6px',
+                overflow: 'hidden',
+              }}>
+                <button
+                  onClick={() => setWeekStart('monday')}
+                  style={{
+                    background: weekStart === 'monday' ? '#fff' : 'transparent',
+                    color: weekStart === 'monday' ? '#000' : '#555',
+                    border: 'none',
+                    padding: '8px 12px',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    fontFamily: 'Aleo, Georgia, serif',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  Mon
+                </button>
+                <button
+                  onClick={() => setWeekStart('sunday')}
+                  style={{
+                    background: weekStart === 'sunday' ? '#fff' : 'transparent',
+                    color: weekStart === 'sunday' ? '#000' : '#555',
+                    border: 'none',
+                    padding: '8px 12px',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    fontFamily: 'Aleo, Georgia, serif',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  Sun
+                </button>
+              </div>
+
+              <div style={{ width: '1px', height: '32px', background: '#252525' }} />
+
               {/* Orientation Toggle */}
               <div style={{
                 display: 'flex',
@@ -686,46 +755,6 @@
                   8-bit
                 </button>
               </div>
-
-              {/* Week Start Toggle */}
-              <div style={{
-                display: 'flex',
-                background: '#151515',
-                border: '1px solid #252525',
-                borderRadius: '6px',
-                overflow: 'hidden',
-              }}>
-                <button
-                  onClick={() => setWeekStart('monday')}
-                  style={{
-                    background: weekStart === 'monday' ? '#fff' : 'transparent',
-                    color: weekStart === 'monday' ? '#000' : '#555',
-                    border: 'none',
-                    padding: '8px 12px',
-                    fontSize: '12px',
-                    cursor: 'pointer',
-                    fontFamily: 'Aleo, Georgia, serif',
-                    transition: 'all 0.15s',
-                  }}
-                >
-                  Mon
-                </button>
-                <button
-                  onClick={() => setWeekStart('sunday')}
-                  style={{
-                    background: weekStart === 'sunday' ? '#fff' : 'transparent',
-                    color: weekStart === 'sunday' ? '#000' : '#555',
-                    border: 'none',
-                    padding: '8px 12px',
-                    fontSize: '12px',
-                    cursor: 'pointer',
-                    fontFamily: 'Aleo, Georgia, serif',
-                    transition: 'all 0.15s',
-                  }}
-                >
-                  Sun
-                </button>
-              </div>
             </div>
 
             {/* Preview */}
@@ -737,6 +766,7 @@
               bitDepth={bitDepth}
               font={font}
               weekStart={weekStart}
+              markWeekends={markWeekends}
             />
 
             {/* Download Button */}
