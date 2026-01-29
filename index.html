@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>XTEINK X4 Calendar Generator</title>
-  <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@400;700&family=Roboto+Slab:wght@400;700&family=Lora:wght@400;700&family=Merriweather:wght@400;700&family=Source+Serif+4:wght@400;700&family=IBM+Plex+Serif:wght@400;700&family=Libre+Baskerville:wght@400;700&family=Playfair+Display:wght@400;700&family=Atkinson+Hyperlegible:wght@400;700&family=Crimson+Text:wght@400;700&family=EB+Garamond:wght@400;700&family=Bitter:wght@400;700&family=Orbitron:wght@400;700&family=Audiowide&family=Rajdhani:wght@400;700&family=Chakra+Petch:wght@400;700&family=Share+Tech+Mono&family=Oxanium:wght@400;700&family=Bangers&family=Comic+Neue:wght@400;700&family=Permanent+Marker&family=Patrick+Hand&family=Caveat:wght@400;700&family=Indie+Flower&family=Fredoka:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@400;700&family=Roboto+Slab:wght@400;700&family=Lora:wght@400;700&family=Merriweather:wght@400;700&family=Source+Serif+4:wght@400;700&family=IBM+Plex+Serif:wght@400;700&family=Libre+Baskerville:wght@400;700&family=Playfair+Display:wght@400;700&family=Atkinson+Hyperlegible:wght@400;700&family=Crimson+Text:wght@400;700&family=EB+Garamond:wght@400;700&family=Bitter:wght@400;700&family=Orbitron:wght@400;700&family=Audiowide&family=Rajdhani:wght@400;700&family=Chakra+Petch:wght@400;700&family=Share+Tech+Mono&family=Oxanium:wght@400;700&family=Bangers&family=Comic+Neue:wght@400;700&family=Permanent+Marker&family=Patrick+Hand&family=Caveat:wght@400;700&family=Indie+Flower&family=Fredoka:wght@400;700&family=Abril+Fatface&family=Alfa+Slab+One&family=Anton&family=Archivo+Black&family=Arvo:wght@400;700&family=Bebas+Neue&family=Black+Ops+One&family=Bungee&family=Cardo:wght@400;700&family=Cinzel:wght@400;700&family=Comfortaa:wght@400;700&family=Cormorant+Garamond:wght@400;700&family=Courier+Prime:wght@400;700&family=DM+Serif+Display&family=Exo+2:wght@400;700&family=Fira+Code:wght@400;700&family=Fjalla+One&family=Gelasio:wght@400;700&family=Gloria+Hallelujah&family=Gravitas+One&family=Gruppo&family=Inconsolata:wght@400;700&family=JetBrains+Mono:wght@400;700&family=Josefin+Sans:wght@400;700&family=Josefin+Slab:wght@400;700&family=Kalam:wght@400;700&family=Kanit:wght@400;700&family=Kaushan+Script&family=Lexend:wght@400;700&family=Lobster&family=Montserrat:wght@400;700&family=Nanum+Gothic:wght@400;700&family=Noto+Serif:wght@400;700&family=Nunito:wght@400;700&family=Old+Standard+TT:wght@400;700&family=Oswald:wght@400;700&family=Outfit:wght@400;700&family=Pacifico&family=Poppins:wght@400;700&family=Press+Start+2P&family=Quicksand:wght@400;700&family=Raleway:wght@400;700&family=Righteous&family=Roboto+Mono:wght@400;700&family=Rubik:wght@400;700&family=Sacramento&family=Satisfy&family=Secular+One&family=Silkscreen&family=Space+Grotesk:wght@400;700&family=Space+Mono:wght@400;700&family=Spectral:wght@400;700&family=Syne:wght@400;700&family=Teko:wght@400;700&family=Titan+One&family=Ubuntu:wght@400;700&family=Ubuntu+Mono:wght@400;700&family=VT323&family=Work+Sans:wght@400;700&family=Yanone+Kaffeesatz:wght@400;700&family=Zilla+Slab:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -26,31 +26,92 @@
     const DAYS_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
     const FONTS = [
+      { name: 'Abril Fatface', value: '"Abril Fatface", serif' },
       { name: 'Aleo', value: 'Aleo, serif' },
+      { name: 'Alfa Slab One', value: '"Alfa Slab One", serif' },
+      { name: 'Anton', value: 'Anton, sans-serif' },
+      { name: 'Archivo Black', value: '"Archivo Black", sans-serif' },
+      { name: 'Arvo', value: 'Arvo, serif' },
       { name: 'Atkinson Hyperlegible', value: '"Atkinson Hyperlegible", sans-serif' },
       { name: 'Audiowide', value: 'Audiowide, sans-serif' },
       { name: 'Bangers', value: 'Bangers, cursive' },
+      { name: 'Bebas Neue', value: '"Bebas Neue", sans-serif' },
       { name: 'Bitter', value: 'Bitter, serif' },
+      { name: 'Black Ops One', value: '"Black Ops One", sans-serif' },
+      { name: 'Bungee', value: 'Bungee, sans-serif' },
+      { name: 'Cardo', value: 'Cardo, serif' },
       { name: 'Caveat', value: 'Caveat, cursive' },
       { name: 'Chakra Petch', value: '"Chakra Petch", sans-serif' },
+      { name: 'Cinzel', value: 'Cinzel, serif' },
+      { name: 'Comfortaa', value: 'Comfortaa, sans-serif' },
       { name: 'Comic Neue', value: '"Comic Neue", cursive' },
+      { name: 'Cormorant Garamond', value: '"Cormorant Garamond", serif' },
+      { name: 'Courier Prime', value: '"Courier Prime", monospace' },
       { name: 'Crimson Text', value: '"Crimson Text", serif' },
+      { name: 'DM Serif Display', value: '"DM Serif Display", serif' },
       { name: 'EB Garamond', value: '"EB Garamond", serif' },
+      { name: 'Exo 2', value: '"Exo 2", sans-serif' },
+      { name: 'Fira Code', value: '"Fira Code", monospace' },
+      { name: 'Fjalla One', value: '"Fjalla One", sans-serif' },
       { name: 'Fredoka', value: 'Fredoka, sans-serif' },
+      { name: 'Gelasio', value: 'Gelasio, serif' },
+      { name: 'Gloria Hallelujah', value: '"Gloria Hallelujah", cursive' },
+      { name: 'Gravitas One', value: '"Gravitas One", serif' },
+      { name: 'Gruppo', value: 'Gruppo, sans-serif' },
       { name: 'IBM Plex Serif', value: '"IBM Plex Serif", serif' },
+      { name: 'Inconsolata', value: 'Inconsolata, monospace' },
       { name: 'Indie Flower', value: '"Indie Flower", cursive' },
+      { name: 'JetBrains Mono', value: '"JetBrains Mono", monospace' },
+      { name: 'Josefin Sans', value: '"Josefin Sans", sans-serif' },
+      { name: 'Josefin Slab', value: '"Josefin Slab", serif' },
+      { name: 'Kalam', value: 'Kalam, cursive' },
+      { name: 'Kanit', value: 'Kanit, sans-serif' },
+      { name: 'Kaushan Script', value: '"Kaushan Script", cursive' },
+      { name: 'Lexend', value: 'Lexend, sans-serif' },
       { name: 'Libre Baskerville', value: '"Libre Baskerville", serif' },
+      { name: 'Lobster', value: 'Lobster, cursive' },
       { name: 'Lora', value: 'Lora, serif' },
       { name: 'Merriweather', value: 'Merriweather, serif' },
+      { name: 'Montserrat', value: 'Montserrat, sans-serif' },
+      { name: 'Nanum Gothic', value: '"Nanum Gothic", sans-serif' },
+      { name: 'Noto Serif', value: '"Noto Serif", serif' },
+      { name: 'Nunito', value: 'Nunito, sans-serif' },
+      { name: 'Old Standard TT', value: '"Old Standard TT", serif' },
       { name: 'Orbitron', value: 'Orbitron, sans-serif' },
+      { name: 'Oswald', value: 'Oswald, sans-serif' },
+      { name: 'Outfit', value: 'Outfit, sans-serif' },
       { name: 'Oxanium', value: 'Oxanium, sans-serif' },
+      { name: 'Pacifico', value: 'Pacifico, cursive' },
       { name: 'Patrick Hand', value: '"Patrick Hand", cursive' },
       { name: 'Permanent Marker', value: '"Permanent Marker", cursive' },
       { name: 'Playfair Display', value: '"Playfair Display", serif' },
+      { name: 'Poppins', value: 'Poppins, sans-serif' },
+      { name: 'Press Start 2P', value: '"Press Start 2P", monospace' },
+      { name: 'Quicksand', value: 'Quicksand, sans-serif' },
       { name: 'Rajdhani', value: 'Rajdhani, sans-serif' },
+      { name: 'Raleway', value: 'Raleway, sans-serif' },
+      { name: 'Righteous', value: 'Righteous, sans-serif' },
+      { name: 'Roboto Mono', value: '"Roboto Mono", monospace' },
       { name: 'Roboto Slab', value: '"Roboto Slab", serif' },
+      { name: 'Rubik', value: 'Rubik, sans-serif' },
+      { name: 'Sacramento', value: 'Sacramento, cursive' },
+      { name: 'Satisfy', value: 'Satisfy, cursive' },
+      { name: 'Secular One', value: '"Secular One", sans-serif' },
       { name: 'Share Tech Mono', value: '"Share Tech Mono", monospace' },
+      { name: 'Silkscreen', value: 'Silkscreen, monospace' },
       { name: 'Source Serif', value: '"Source Serif 4", serif' },
+      { name: 'Space Grotesk', value: '"Space Grotesk", sans-serif' },
+      { name: 'Space Mono', value: '"Space Mono", monospace' },
+      { name: 'Spectral', value: 'Spectral, serif' },
+      { name: 'Syne', value: 'Syne, sans-serif' },
+      { name: 'Teko', value: 'Teko, sans-serif' },
+      { name: 'Titan One', value: '"Titan One", sans-serif' },
+      { name: 'Ubuntu', value: 'Ubuntu, sans-serif' },
+      { name: 'Ubuntu Mono', value: '"Ubuntu Mono", monospace' },
+      { name: 'VT323', value: 'VT323, monospace' },
+      { name: 'Work Sans', value: '"Work Sans", sans-serif' },
+      { name: 'Yanone Kaffeesatz', value: '"Yanone Kaffeesatz", sans-serif' },
+      { name: 'Zilla Slab', value: '"Zilla Slab", serif' },
     ];
 
     function getDaysInMonth(year, month) {
@@ -786,4 +847,39 @@
             <div style={{ textAlign: 'center' }}>
               <button
                 onClick={generateBMP}
-                dis
+                disabled={isGenerating}
+                style={{
+                  background: isGenerating ? '#222' : '#fff',
+                  color: isGenerating ? '#555' : '#000',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '12px 32px',
+                  fontSize: '13px',
+                  fontFamily: 'Aleo, Georgia, serif',
+                  fontWeight: '700',
+                  letterSpacing: '1px',
+                  cursor: isGenerating ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.15s',
+                }}
+              >
+                {isGenerating ? 'GENERATING...' : 'DOWNLOAD SLEEP.BMP'}
+              </button>
+              
+              <p style={{
+                color: '#333',
+                fontSize: '10px',
+                marginTop: '10px',
+                letterSpacing: '1px',
+              }}>
+                {bitDepth === '1bit' ? '1-bit mono' : '8-bit grayscale'} • {DEVICE_WIDTH}×{DEVICE_HEIGHT} • 220 DPI
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<EinkCalendarGenerator />);
+  </script>
+</body>
+</html>
