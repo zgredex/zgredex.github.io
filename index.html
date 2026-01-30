@@ -233,8 +233,6 @@
         ctx.font = `400 ${isLandscape ? 22 : 26}px ${font}`;
         ctx.textBaseline = 'middle';
         
-        const circleRadius = Math.min(cellWidth, cellHeight) * 0.42;
-        
         weeks.forEach((week, weekIndex) => {
           week.forEach((day, dayIndex) => {
             if (day !== null) {
