@@ -332,7 +332,7 @@
       const [year, setYear] = useState(now.getFullYear());
       const [orientation, setOrientation] = useState('portrait');
       const [bitDepth, setBitDepth] = useState('8bit');
-      const [font, setFont] = useState(FONTS[0].value);
+      const [font, setFont] = useState('Aleo, serif');
       const [weekStart, setWeekStart] = useState('monday');
       const [markWeekends, setMarkWeekends] = useState(true);
       const [isGenerating, setIsGenerating] = useState(false);
@@ -565,8 +565,8 @@
           if (!containerRef.current) return;
           
           const container = containerRef.current;
-          const contentWidth = container.scrollWidth;
-          const contentHeight = container.scrollHeight;
+          const contentWidth = container.scrollWidth || 1;
+          const contentHeight = container.scrollHeight || 1;
           
           const availableWidth = window.innerWidth - 32;
           const availableHeight = window.innerHeight - 32;
@@ -574,11 +574,14 @@
           const scaleX = availableWidth / contentWidth;
           const scaleY = availableHeight / contentHeight;
           
-          setScale(Math.min(scaleX, scaleY, 1.5)); // allow up to 1.5x scale
+          const newScale = Math.min(scaleX, scaleY, 1.5);
+          if (newScale > 0 && isFinite(newScale)) {
+            setScale(newScale);
+          }
         };
         
         // Initial calculation after render
-        setTimeout(updateScale, 50);
+        setTimeout(updateScale, 100);
         window.addEventListener('resize', updateScale);
         return () => window.removeEventListener('resize', updateScale);
       }, []);
