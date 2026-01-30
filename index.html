@@ -356,7 +356,7 @@
         let outputPixels = pixels;
         
         if (isLandscape) {
-          // Rotate 90° clockwise: 800x480 becomes 480x800
+          // Rotate 90° counter-clockwise: 800x480 becomes 480x800
           outputWidth = DEVICE_HEIGHT; // 480
           outputHeight = DEVICE_WIDTH; // 800
           
@@ -364,9 +364,9 @@
           
           for (let y = 0; y < DEVICE_HEIGHT; y++) {
             for (let x = 0; x < DEVICE_WIDTH; x++) {
-              // 90° clockwise: new_x = old_y, new_y = (width - 1 - old_x)
-              const newX = y;
-              const newY = DEVICE_WIDTH - 1 - x;
+              // 90° counter-clockwise: new_x = (height - 1 - old_y), new_y = old_x
+              const newX = DEVICE_HEIGHT - 1 - y;
+              const newY = x;
               
               const oldIdx = (y * DEVICE_WIDTH + x) * 4;
               const newIdx = (newY * outputWidth + newX) * 4;
